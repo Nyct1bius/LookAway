@@ -51,6 +51,8 @@ public class DayTime : MonoBehaviour
         {
             DuskCall();
             day = true;
+           
+            daySpeed = 20000;
 
             enemySpawner.GetComponent<EnemySpawner>().canSpawnEnemies = false;
         }
@@ -58,6 +60,8 @@ public class DayTime : MonoBehaviour
         {
             DawnCall();
             day = false;
+
+            daySpeed = 200;
 
             enemySpawner.GetComponent<EnemySpawner>().canSpawnEnemies = true;
         }

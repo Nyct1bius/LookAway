@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    private Transform playerCamera;
+    private Transform player;
 
     [SerializeField] private GameObject enemy;
 
@@ -12,17 +12,17 @@ public class EnemySpawner : MonoBehaviour
 
     [SerializeField] private LayerMask terrainMask;
 
-    [SerializeField] private float spawnRadiusMin, spawnRadiusMax, spawnCooldownMax;
-    private float spawnCooldown;    
+    [SerializeField] private float spawnAreaRadius, spawnCooldownMax;
+    private float spawnCooldown;
 
     private Vector3 spawnPoint;
 
-    private bool spawnPointSet = false;
-    
+    //private bool spawnPointSet = false;
+
     // Start is called before the first frame update
     void Start()
     {
-        playerCamera = GameObject.FindGameObjectWithTag("MainCamera").transform;
+        player = GameObject.FindGameObjectWithTag("Player").transform;
 
         spawnCooldown = spawnCooldownMax;
     }
@@ -30,10 +30,13 @@ public class EnemySpawner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position = playerCamera.position;
-        
-        spawnCooldown -= Time.deltaTime;
-        
+        transform.position = player.position;
+
+        if (canSpawnEnemies)
+        {
+            spawnCooldown -= Time.deltaTime;
+        }
+
         if (spawnCooldown <= 0)
         {
             FindSpawnPoint();
@@ -42,14 +45,15 @@ public class EnemySpawner : MonoBehaviour
 
     void FindSpawnPoint()
     {
-        float randomX = Random.Range(-spawnRadiusMax - -spawnRadiusMin, spawnRadiusMax - spawnRadiusMin);
-        float randomZ = Random.Range(-spawnRadiusMax - -spawnRadiusMin, spawnRadiusMax - spawnRadiusMin);
+        float randomX = Random.Range(-spawnAreaRadius, spawnAreaRadius);
+        float randomZ = Random.Range(-spawnAreaRadius, spawnAreaRadius);
 
-        spawnPoint = new Vector3(transform.position.x + randomX, transform.position.y, transform.position.z + randomZ);
+        spawnPoint = new Vector3(transform.position.x + randomX, transform.position.y + 4, transform.position.z + randomZ);
 
-        if (Physics.Raycast(spawnPoint, transform.up, 2f, terrainMask) && Physics.Raycast(spawnPoint, -transform.up, 2f, terrainMask))
+        if (Physics.Raycast(spawnPoint, -transform.up, 5f, terrainMask) && canSpawnEnemies && !Physics.Raycast(spawnPoint, -transform.up, 5f, LayerMask.GetMask("Default")) && Vector3.Distance(transform.position, spawnPoint) >= 40)
         {
-            //Instantiate(enemy, spawnPoint, Quaternion.identity);
+            Instantiate(enemy, spawnPoint, Quaternion.identity);
+            Debug.Log("Enemy Spawned");
             spawnCooldown = spawnCooldownMax;
         }
     }
