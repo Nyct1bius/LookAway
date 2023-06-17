@@ -17,6 +17,9 @@ public class DayTime : MonoBehaviour
 
     public static DayTime instance;
     bool day = false;
+
+    private GameObject enemySpawner;
+
     private void Awake()
     {
         instance = this;
@@ -27,6 +30,8 @@ public class DayTime : MonoBehaviour
         sunlight = GetComponent<Light>();
         DawnCall += Afternon;
         DuskCall += Morning;
+
+        enemySpawner = GameObject.FindGameObjectWithTag("EnemySpawner");
     }
     
     // Update is called once per frame
@@ -46,11 +51,15 @@ public class DayTime : MonoBehaviour
         {
             DuskCall();
             day = true;
+
+            enemySpawner.GetComponent<EnemySpawner>().canSpawnEnemies = false;
         }
         if (intensity < 0.4f&& day)
         {
             DawnCall();
             day = false;
+
+            enemySpawner.GetComponent<EnemySpawner>().canSpawnEnemies = true;
         }
 
     }
