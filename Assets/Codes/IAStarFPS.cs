@@ -10,7 +10,11 @@ public class IAStarFPS : MonoBehaviour
     public NavMeshAgent agent;
     public Animator anim;
     public SkinnedMeshRenderer render;
-    public float DistanceToAttack=3;
+    public float DistanceToAttack = 3f;
+    [SerializeField] private bool openWorldVariant;
+    private float timeToDespawn = 10f;
+    public float openWorldMoveSpeed = 20f;
+    private Rigidbody rb;
     public enum States
     {
         pursuit,
@@ -30,6 +34,7 @@ public class IAStarFPS : MonoBehaviour
         {
             target= GameObject.FindGameObjectWithTag("Player");
         }
+
         StartCoroutine("StoppedState");
     }
 
@@ -41,9 +46,39 @@ public class IAStarFPS : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
-        anim.SetFloat("Velocidade", agent.velocity.magnitude);
+        if (!openWorldVariant)
+        {
+            anim.SetFloat("Velocidade", agent.velocity.magnitude);
+        }
 
+        if (openWorldVariant)
+        {
+            if (Vector3.Distance(transform.position, target.transform.position) <= 20f)
+            {
+                transform.LookAt(target.transform.position);
+            }
+
+            rb = gameObject.GetComponent<Rigidbody>();
+
+            if (Vector3.Distance(transform.position, target.transform.position) <= 3)
+            {
+                rb.isKinematic = true;
+            }   
+            else
+            {
+                rb.isKinematic = false;
+            }
+
+            if (timeToDespawn >= 0)
+            {
+                timeToDespawn -= Time.deltaTime;
+            }
+
+            if (timeToDespawn <= 0 && Vector3.Distance(transform.position, target.transform.position) >= 55f && !render.isVisible)
+            {
+                Destroy(gameObject);
+            }
+        }
     }
 
     void StateMachine(States _state)
@@ -81,13 +116,21 @@ public class IAStarFPS : MonoBehaviour
     }
     private IEnumerator Patrol()
     {
-        agent.isStopped = false;
-        agent.destination = RandomPosition(20);
+        if (!openWorldVariant)
+        {
+            agent.isStopped = false;
+            agent.destination = RandomPosition(20);
+        }
+        else
+        {
+            transform.position = transform.position;
+            anim.SetFloat("Velocidade", 0.4f);
+        }
       
         anim.SetBool("Attack", false);
         anim.SetBool("Damage", false);
         yield return new WaitForSeconds(1);
-        if (Vector3.Distance(transform.position, target.transform.position) < DistanceToAttack * 3)
+        if (Vector3.Distance(transform.position, target.transform.position) < DistanceToAttack * 4)
         {
             StateMachine(States.pursuit);
         }
@@ -106,7 +149,16 @@ public class IAStarFPS : MonoBehaviour
     
     IEnumerator DamageState()
     {
-        agent.isStopped = true;
+        if (!openWorldVariant)
+        {
+            agent.isStopped = true;
+        }
+        else
+        {
+            transform.position = transform.position;
+            anim.SetFloat("Velocidade", 0.4f);
+        }
+
         anim.SetBool("Damage", true);
         for (int i = 0; i < 4; i++)
         {
@@ -128,8 +180,17 @@ public class IAStarFPS : MonoBehaviour
 
     IEnumerator PursuitState()
     {
-        agent.isStopped = false;
-        agent.destination = target.transform.position;
+        if (!openWorldVariant)
+        {
+            agent.isStopped = false;
+            agent.destination = target.transform.position;
+        }
+        else
+        {
+            transform.position = Vector3.MoveTowards(transform.position, target.transform.position, openWorldMoveSpeed * Time.deltaTime);
+            anim.SetFloat("Velocidade", 3.6f);
+        }
+
         anim.SetBool("Attack", false);
         anim.SetBool("Damage", false);
         yield return new WaitForSeconds(0.1f);
@@ -150,7 +211,16 @@ public class IAStarFPS : MonoBehaviour
 
     IEnumerator AttackState()
     {
-        agent.isStopped = true;
+        if (!openWorldVariant)
+        {
+            agent.isStopped = true;
+        }
+        else
+        {
+            transform.position = transform.position;
+            anim.SetFloat("Velocidade", 0.4f);
+        }
+
         anim.SetBool("Attack", true);
         anim.SetBool("Damage", false);
         yield return new WaitForSeconds(0.1f);
@@ -167,7 +237,16 @@ public class IAStarFPS : MonoBehaviour
 
     IEnumerator StoppedState()
     {
-        agent.isStopped = true;
+        if (!openWorldVariant)
+        {
+            agent.isStopped = true;
+        }
+        else
+        {
+            transform.position = transform.position;
+            anim.SetFloat("Velocidade", 0.4f);
+        }
+
         anim.SetBool("Attack", false);
         anim.SetBool("Damage", false);
         yield return new WaitForSeconds(1f);
@@ -188,7 +267,16 @@ public class IAStarFPS : MonoBehaviour
 
     IEnumerator DeadState()
     {
-        agent.isStopped = true;
+        if (!openWorldVariant)
+        {
+            agent.isStopped = true;
+        }
+        else
+        {
+            transform.position = transform.position;
+            anim.SetFloat("Velocidade", 0.4f);
+        }
+
         anim.SetBool("Attack", false);
         anim.SetBool("Dead", true);
         anim.SetBool("Damage", false);

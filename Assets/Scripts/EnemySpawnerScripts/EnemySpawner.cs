@@ -12,12 +12,10 @@ public class EnemySpawner : MonoBehaviour
 
     [SerializeField] private LayerMask terrainMask;
 
-    [SerializeField] private float spawnAreaRadius, spawnCooldownMax;
+    [SerializeField] private float spawnAreaRadiusMax, spawnAreaRadiusMin, spawnCooldownMax;
     private float spawnCooldown;
 
     private Vector3 spawnPoint;
-
-    //private bool spawnPointSet = false;
 
     // Start is called before the first frame update
     void Start()
@@ -37,7 +35,7 @@ public class EnemySpawner : MonoBehaviour
             spawnCooldown -= Time.deltaTime;
         }
 
-        if (spawnCooldown <= 0)
+        if (spawnCooldown <= 0 )
         {
             FindSpawnPoint();
         }
@@ -45,15 +43,14 @@ public class EnemySpawner : MonoBehaviour
 
     void FindSpawnPoint()
     {
-        float randomX = Random.Range(-spawnAreaRadius, spawnAreaRadius);
-        float randomZ = Random.Range(-spawnAreaRadius, spawnAreaRadius);
+        float randomX = Random.Range(-spawnAreaRadiusMax, spawnAreaRadiusMax);
+        float randomZ = Random.Range(-spawnAreaRadiusMax, spawnAreaRadiusMax);
 
-        spawnPoint = new Vector3(transform.position.x + randomX, transform.position.y + 4, transform.position.z + randomZ);
+        spawnPoint = new Vector3(transform.position.x + randomX, transform.position.y + 4, transform.position.z + randomZ);;
 
-        if (Physics.Raycast(spawnPoint, -transform.up, 5f, terrainMask) && canSpawnEnemies && !Physics.Raycast(spawnPoint, -transform.up, 5f, LayerMask.GetMask("Default")) && Vector3.Distance(transform.position, spawnPoint) >= 40)
+        if (canSpawnEnemies && Physics.Raycast(spawnPoint, -transform.up, 5f, terrainMask) && !Physics.Raycast(spawnPoint, -transform.up, 5f, LayerMask.GetMask("Default")) && Vector3.Distance(transform.position, spawnPoint) >= spawnAreaRadiusMin)
         {
             Instantiate(enemy, spawnPoint, Quaternion.identity);
-            Debug.Log("Enemy Spawned");
             spawnCooldown = spawnCooldownMax;
         }
     }
